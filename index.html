@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Photo Gallery & Archive - REG KKU</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Prompt -->
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; background-color: #f4f6f8; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col pb-24">
+
+  <!-- ==================== LOGIN MODAL POPUP ==================== -->
+  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 transform transition-all">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-[#7a1c24] via-[#8c222b] to-[#63141b] p-6 text-white text-center relative">
+        <div class="mx-auto w-16 h-16 bg-white/15 rounded-2xl flex items-center justify-center mb-3 shadow-inner border border-white/20">
+          <img src="https://img2.pic.in.th/reg_logo_png.png" alt="Logo" class="w-12 h-12 object-contain drop-shadow">
+        </div>
+        <h2 class="text-xl font-bold tracking-wide">เข้าสู่ระบบคลังภาพ</h2>
+        <p class="text-s text-amber-200 mt-1">สำนักบริหารและพัฒนาวิชาการ มหาวิทยาลัยขอนแก่น</p>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 sm:p-8 space-y-5">
+        <div id="login-error" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs px-4 py-3 rounded-xl font-medium text-center">
+          ชื่อผู้ใช้งาน หรือ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+        </div>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-s font-semibold text-slate-600 mb-1.5">ชื่อผู้ใช้งาน (Username)</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </span>
+              <input type="text" id="login-user" placeholder="กรอกชื่อผู้ใช้งาน" 
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-600 focus:bg-white transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-s font-semibold text-slate-600 mb-1.5">รหัสผ่าน (Password)</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </span>
+              <input type="password" id="login-pass" placeholder="กรอกรหัสผ่าน" 
+                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-600 focus:bg-white transition"
+                onkeypress="if(event.key === 'Enter') handleLogin()">
+            </div>
+          </div>
+        </div>
+
+        <button onclick="handleLogin()" class="w-full py-3.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-semibold rounded-xl text-sm shadow-md hover:opacity-95 transition transform active:scale-98">
+          เข้าสู่ระบบ
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ========================================================== -->
+
+  <!-- Header / Navbar -->
+  <header class="bg-gradient-to-r from-[#7a1c24] via-[#8c222b] to-[#63141b] text-white shadow-lg sticky top-0 z-30 border-b border-amber-500/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer group" onclick="goHome()">
+        <div class="p-1.5 bg-white/15 rounded-xl backdrop-blur-md group-hover:bg-white/25 transition shadow-inner border border-white/20 flex items-center justify-center w-12 h-12">
+          <img src="https://img2.pic.in.th/reg_logo_png.png" alt="REG KKU Logo" class="w-9 h-9 object-contain drop-shadow">
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-wide text-white drop-shadow-sm">ระบบจัดเก็บและแสดงภาพถ่ายกิจกรรม REG KKU</h1>
+          <p class="text-s text-amber-200 font-light">สำนักบริหารและพัฒนาวิชาการ มหาวิทยาลัยขอนแก่น</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <div class="text-xs sm:text-sm bg-black/25 backdrop-blur-md px-4 py-2 rounded-xl font-medium text-amber-200 border border-amber-400/30 hidden sm:flex items-center space-x-2 shadow-inner">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>ระบบออนไลน์ (Online)</span>
+        </div>
+        <!-- ปุ่ม Logout -->
+        <button onclick="handleLogout()" class="px-3.5 py-2 bg-white/10 hover:bg-white/25 text-white rounded-xl text-xs font-semibold border border-white/20 transition shadow-sm flex items-center space-x-1.5" title="ออกจากระบบ">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          <span class="hidden md:inline">ออกจากระบบ</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    <!-- Loading State -->
+    <div id="loading" class="flex flex-col items-center justify-center py-24">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-[#7a1c24] mb-4"></div>
+      <p class="text-slate-500 font-medium text-lg">กำลังโหลดคลังภาพ...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-container" class="hidden bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-lg mb-8 shadow-sm">
+      <div class="flex">
+        <div class="flex-shrink-0">
+          <svg class="h-5 w-5 text-rose-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <div class="ml-3">
+          <p id="error-message" class="text-sm text-rose-700 font-medium"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Area -->
+    <div id="app-content" class="hidden space-y-8">
+
+      <!-- Dashboard Statistics Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        
+        <!-- Card 1: อัลบั้มล่าสุด -->
+        <div id="latest-album-card" class="bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-2xl p-6 shadow-md flex items-center justify-between cursor-pointer hover:shadow-lg transition duration-300 group">
+          <div class="overflow-hidden pr-2">
+            <p class="text-xs sm:text-sm font-medium text-rose-100">อัลบั้มล่าสุด</p>
+            <h3 id="stat-latest-name" class="text-base sm:text-lg font-bold mt-1 text-white truncate group-hover:text-rose-200 transition">กำลังโหลด...</h3>
+            <p id="stat-latest-date" class="text-xs text-rose-100/80 mt-0.5">-</p>
+          </div>
+          <div class="p-3 bg-white/15 rounded-xl text-white shrink-0 group-hover:scale-105 transition shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 2: อัลบั้มกิจกรรมทั้งหมด -->
+        <div class="bg-gradient-to-r from-amber-500 to-yellow-600 text-white rounded-2xl p-6 shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm font-medium text-amber-100">อัลบั้มกิจกรรมทั้งหมด</p>
+            <h3 id="stat-albums" class="text-3xl sm:text-4xl font-extrabold mt-1 text-white">0</h3>
+          </div>
+          <div class="p-3 bg-white/15 rounded-xl text-white shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Card 3: จำนวนรูปภาพทั้งหมดในคลัง -->
+        <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl p-6 shadow-md flex items-center justify-between">
+          <div>
+            <p class="text-xs sm:text-sm font-medium text-emerald-100">จำนวนรูปภาพทั้งหมดในคลัง</p>
+            <h3 id="stat-images" class="text-3xl sm:text-4xl font-extrabold mt-1 text-white">0</h3>
+          </div>
+          <div class="p-3 bg-white/15 rounded-xl text-white shadow-inner">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Search Bar -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div class="flex-1 relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-slate-400">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </span>
+            <input type="text" id="search-input" placeholder="ค้นหาตามชื่องาน, กิจกรรม หรือวันที่ (เช่น 2569, พิธี)..." 
+              class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-600 focus:bg-white transition text-sm">
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="clearSearch()" class="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium rounded-xl text-sm transition">
+              ล้างการค้นหา
+            </button>
+            <span id="result-count" class="text-sm text-slate-500 font-medium whitespace-nowrap">แสดงทั้งหมด</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- View 1: Albums Grid (Home) -->
+      <div id="albums-view">
+        <h2 class="text-xl font-bold text-slate-900 mb-6 flex items-center space-x-2">
+          <svg class="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          <span>อัลบั้มภาพกิจกรรมทั้งหมด</span>
+        </h2>
+        <div id="albums-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- Dynamic Album Cards -->
+        </div>
+      </div>
+
+      <!-- View 2: Album Detail (Hidden by default) -->
+      <div id="album-detail-view" class="hidden space-y-6">
+        
+        <!-- Header รายละเอียดอัลบั้ม พร้อมปุ่มย้อนกลับและปุ่มเลือกรูปทั้งหมด -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-2">
+            <button onclick="goHome()" class="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white hover:opacity-95 rounded-xl text-sm font-semibold shadow-sm transition">
+              <svg class="h-4 w-4 text-rose-100" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+              </svg>
+              <span>กลับหน้าอัลบั้มทั้งหมด</span>
+            </button>
+            <h2 id="detail-title" class="text-2xl font-bold text-slate-900 pt-1">ชื่องานกิจกรรม</h2>
+            <p id="detail-date" class="text-sm text-slate-500">วันที่</p>
+          </div>
+          <div class="flex items-center space-x-3">
+            <button onclick="toggleSelectAllInCurrentAlbum()" id="select-all-btn" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition border border-slate-300 flex items-center space-x-1.5">
+              <svg class="h-4 w-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              <span>ถูกใจทั้งหมดในอัลบั้มนี้</span>
+            </button>
+            <span id="detail-count" class="px-4 py-2 bg-rose-50 text-rose-700 font-semibold rounded-xl text-sm">0 รูป</span>
+          </div>
+        </div>
+        
+        <!-- รูปภาพภายในอัลบั้ม -->
+        <div id="detail-images-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          <!-- Dynamic Images inside Album -->
+        </div>
+      </div>
+
+      <!-- No Results State -->
+      <div id="no-results" class="hidden text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-slate-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="text-slate-600 font-medium text-lg">ไม่พบอัลบั้มที่ค้นหา</p>
+        <p class="text-slate-400 text-sm mt-1">ลองเปลี่ยนคำค้นหาใหม่อีกครั้งครับ</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==================== FLOATING CART BAR (ตะกร้าเลือกรูป) ==================== -->
+  <div id="floating-cart" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md text-white border-t border-slate-700 shadow-2xl py-4 px-6 transition-all transform translate-y-0">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="p-2.5 bg-gradient-to-r from-orange-500 to-rose-600 rounded-xl text-white shadow-inner">
+          <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs text-slate-400">รูปภาพที่ถูกใจ (เลือกไว้)</p>
+          <p class="text-base font-bold"><span id="selected-count" class="text-orange-400">0</span> รูปภาพ</p>
+        </div>
+      </div>
+      <div class="flex items-center space-x-3">
+        <button onclick="clearSelection()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium rounded-xl text-sm border border-slate-700 transition">
+          ล้างรายการที่เลือก
+        </button>
+        <button onclick="downloadSelectedZip()" id="download-zip-btn" class="px-6 py-2.5 bg-gradient-to-r from-orange-500 via-rose-600 to-pink-600 hover:opacity-95 text-white font-semibold rounded-xl text-sm shadow-md transition flex items-center space-x-2">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
+          <span id="download-btn-text">ดาวน์โหลดรูปที่เลือก (.zip)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- ========================================================== -->
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-slate-500 text-sm">
+    <p>ระบบจัดเก็บและแสดงภาพถ่ายกิจกรรม REG พัฒนาโดย วิญญ์ สาสุนันท์</p>
+  </footer>
+
+  <!-- JavaScript App Logic -->
+  <script>
+    // URL API จาก Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbw3qumk18s4KALFqS0-KMgKHX-M3qrtjoee63kq0bZ4ye_L4wC4mcJz0HOOPpw-OCjY/exec";
+
+    let globalAlbums = [];
+    let selectedImageIds = new Set();
+    let currentActiveAlbumId = null;
+
+    const AUTH_USER = "regkku";
+    const AUTH_PASS = "kku2569";
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (sessionStorage.getItem('isLoggedIn') === 'true') {
+        document.getElementById('login-modal').classList.add('hidden');
+        loadGalleryData();
+      } else {
+        document.getElementById('login-modal').classList.remove('hidden');
+      }
+    });
+
+    function handleLogin() {
+      const userInput = document.getElementById('login-user').value.trim();
+      const passInput = document.getElementById('login-pass').value.trim();
+      const errorDiv = document.getElementById('login-error');
+
+      if (userInput === AUTH_USER && passInput === AUTH_PASS) {
+        sessionStorage.setItem('isLoggedIn', 'true');
+        document.getElementById('login-modal').classList.add('hidden');
+        errorDiv.classList.add('hidden');
+        loadGalleryData();
+      } else {
+        errorDiv.classList.remove('hidden');
+        document.getElementById('login-pass').value = '';
+        document.getElementById('login-pass').focus();
+      }
+    }
+
+    function handleLogout() {
+      sessionStorage.removeItem('isLoggedIn');
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+      document.getElementById('login-error').classList.add('hidden');
+      document.getElementById('login-modal').classList.remove('hidden');
+      goHome();
+    }
+
+    // ดึงข้อมูลผ่าน Fetch API แทน google.script.run
+    function loadGalleryData() {
+      fetch(`${API_URL}?action=getGalleryData`)
+        .then(res => res.json())
+        .then(response => {
+          onDataLoaded(response);
+        })
+        .catch(error => {
+          onDataError(error);
+        });
+    }
+
+    function formatThaiDate(dateStr) {
+      if (!dateStr) return '';
+      const parts = dateStr.split('-');
+      if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+        
+        const thaiMonths = [
+          '', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+          'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+        ];
+        
+        if (month >= 1 && month <= 12) {
+          const thaiYear = year + 543;
+          return `${day} ${thaiMonths[month]} ${thaiYear}`;
+        }
+      }
+      return dateStr;
+    }
+
+    function onDataLoaded(response) {
+      document.getElementById('loading').classList.add('hidden');
+      if (!response.success) {
+        showError(response.message);
+        return;
+      }
+      globalAlbums = response.albums;
+      document.getElementById('stat-albums').innerText = response.stats.totalAlbums.toLocaleString();
+      document.getElementById('stat-images').innerText = response.stats.totalImages.toLocaleString();
+      
+      if (globalAlbums.length > 0) {
+        const latest = globalAlbums[0];
+        document.getElementById('stat-latest-name').innerText = latest.eventName;
+        document.getElementById('stat-latest-date').innerText = `วันที่จัดงาน: ${formatThaiDate(latest.date)}`;
+        document.getElementById('latest-album-card').onclick = () => openAlbumDetail(latest.folderId);
+      } else {
+        document.getElementById('stat-latest-name').innerText = 'ไม่มีอัลบั้ม';
+        document.getElementById('stat-latest-date').innerText = '-';
+      }
+
+      document.getElementById('app-content').classList.remove('hidden');
+      renderAlbumsGrid(globalAlbums);
+    }
+
+    function onDataError(error) {
+      document.getElementById('loading').classList.add('hidden');
+      showError('เกิดข้อผิดพลาดในการเชื่อมต่อคลังภาพ: ' + error.message);
+    }
+
+    function showError(message) {
+      const errContainer = document.getElementById('error-container');
+      document.getElementById('error-message').innerText = message;
+      errContainer.classList.remove('hidden');
+    }
+
+    function renderAlbumsGrid(albumsToRender) {
+      const grid = document.getElementById('albums-grid');
+      const noResults = document.getElementById('no-results');
+      const resultCount = document.getElementById('result-count');
+      
+      grid.innerHTML = '';
+      
+      if (albumsToRender.length === 0) {
+        noResults.classList.remove('hidden');
+        resultCount.innerText = 'ไม่พบผลลัพธ์';
+        return;
+      }
+      
+      noResults.classList.add('hidden');
+      resultCount.innerText = `แสดง ${albumsToRender.length} อัลบั้ม`;
+
+      albumsToRender.forEach(album => {
+        let card = document.createElement('div');
+        card.className = 'bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 hover:shadow-md transition duration-300 cursor-pointer flex flex-col group';
+        card.onclick = () => openAlbumDetail(album.folderId);
+
+        const thaiDateStr = formatThaiDate(album.date);
+
+        card.innerHTML = `
+          <div class="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+            <img src="${album.coverImage}" loading="lazy" alt="${album.eventName}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80"></div>
+            <span class="absolute bottom-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-md text-rose-600 text-xs font-semibold rounded-lg shadow-sm">
+              ${thaiDateStr}
+            </span>
+          </div>
+          <div class="p-5 flex flex-col flex-grow justify-between space-y-3">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base line-clamp-2 group-hover:text-rose-600 transition">${album.eventName}</h3>
+            </div>
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-xs text-slate-500 font-medium">
+              <span class="flex items-center space-x-1.5">
+                <svg class="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>${album.imageCount} รูปภาพ</span>
+              </span>
+              <span class="text-rose-600 group-hover:translate-x-1 transition flex items-center space-x-1 font-semibold">
+                <span>เปิดดูอัลบั้ม</span>
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </span>
+            </div>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function openAlbumDetail(folderId) {
+      currentActiveAlbumId = folderId;
+      const album = globalAlbums.find(a => a.folderId === folderId);
+      if (!album) return;
+
+      document.getElementById('albums-view').classList.add('hidden');
+      document.getElementById('album-detail-view').classList.remove('hidden');
+      
+      document.getElementById('detail-title').innerText = album.eventName;
+      document.getElementById('detail-date').innerText = `วันที่จัดงาน: ${formatThaiDate(album.date)}`;
+      document.getElementById('detail-count').innerText = `${album.imageCount} รูปภาพ`;
+
+      renderImagesGrid(album.images);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderImagesGrid(images) {
+      const detailGrid = document.getElementById('detail-images-grid');
+      detailGrid.innerHTML = '';
+
+      images.forEach(img => {
+        let isSelected = selectedImageIds.has(img.id);
+
+        let imgContainer = document.createElement('div');
+        imgContainer.className = `group relative bg-slate-100 rounded-xl overflow-hidden aspect-[4/3] shadow-sm hover:shadow-md transition border-2 ${isSelected ? 'border-orange-500 ring-2 ring-orange-200' : 'border-transparent'}`;
+        
+        let directUrl = `https://lh3.googleusercontent.com/d/${img.id}`;
+
+        imgContainer.innerHTML = `
+          <!-- รูปภาพ (คลิกเปิดภาพเต็มจอ) -->
+          <a href="${directUrl}" target="_blank" title="${img.name}" class="block w-full h-full cursor-pointer">
+            <img src="${img.thumbnailUrl}" loading="lazy" alt="${img.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+              <div class="bg-white/20 backdrop-blur-sm p-2 rounded-full text-white">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+              </div>
+            </div>
+          </a>
+
+          <!-- ปุ่มรูปหัวใจ (มุมบนซ้าย) -->
+          <button onclick="toggleImageSelection('${img.id}', event)" class="absolute top-3 left-3 z-10 w-9 h-9 rounded-xl flex items-center justify-center transition shadow-md transform active:scale-90 ${isSelected ? 'bg-gradient-to-tr from-orange-500 to-rose-600 text-white shadow-orange-500/30' : 'bg-white/80 hover:bg-white text-slate-400 hover:text-orange-500 backdrop-blur-sm'}" title="ถูกใจรูปนี้">
+            <svg class="h-5 w-5 ${isSelected ? 'fill-current' : ''}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        `;
+        detailGrid.appendChild(imgContainer);
+      });
+    }
+
+    function toggleImageSelection(imgId, event) {
+      event.stopPropagation();
+      if (selectedImageIds.has(imgId)) {
+        selectedImageIds.delete(imgId);
+      } else {
+        selectedImageIds.add(imgId);
+      }
+
+      updateCartUI();
+      if (currentActiveAlbumId) {
+        const album = globalAlbums.find(a => a.folderId === currentActiveAlbumId);
+        if (album) renderImagesGrid(album.images);
+      }
+    }
+
+    function toggleSelectAllInCurrentAlbum() {
+      if (!currentActiveAlbumId) return;
+      const album = globalAlbums.find(a => a.folderId === currentActiveAlbumId);
+      if (!album) return;
+
+      const allIds = album.images.map(img => img.id);
+      const allSelected = allIds.every(id => selectedImageIds.has(id));
+
+      if (allSelected) {
+        allIds.forEach(id => selectedImageIds.delete(id));
+      } else {
+        allIds.forEach(id => selectedImageIds.add(id));
+      }
+
+      updateCartUI();
+      renderImagesGrid(album.images);
+    }
+
+    function updateCartUI() {
+      const cartBar = document.getElementById('floating-cart');
+      const countSpan = document.getElementById('selected-count');
+      const count = selectedImageIds.size;
+
+      countSpan.innerText = count;
+
+      if (count > 0) {
+        cartBar.classList.remove('hidden');
+      } else {
+        cartBar.classList.add('hidden');
+      }
+    }
+
+    function clearSelection() {
+      selectedImageIds.clear();
+      updateCartUI();
+      if (currentActiveAlbumId) {
+        const album = globalAlbums.find(a => a.folderId === currentActiveAlbumId);
+        if (album) renderImagesGrid(album.images);
+      }
+    }
+
+    // ดาวน์โหลด ZIP ผ่าน Fetch API POST
+    function downloadSelectedZip() {
+      if (selectedImageIds.size === 0) return;
+
+      const btnText = document.getElementById('download-btn-text');
+      const zipBtn = document.getElementById('download-zip-btn');
+      
+      btnText.innerText = 'กำลังเตรียมไฟล์ ZIP...';
+      zipBtn.disabled = true;
+
+      fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'downloadZip',
+          imageIds: Array.from(selectedImageIds)
+        })
+      })
+      .then(res => res.json())
+      .then(result => {
+        btnText.innerText = 'ดาวน์โหลดรูปที่เลือก (.zip)';
+        zipBtn.disabled = false;
+        onZipReady(result);
+      })
+      .catch(error => {
+        btnText.innerText = 'ดาวน์โหลดรูปที่เลือก (.zip)';
+        zipBtn.disabled = false;
+        alert('เกิดข้อผิดพลาดในการดาวน์โหลด ZIP: ' + error.message);
+      });
+    }
+
+    function onZipReady(result) {
+      if (!result.success) {
+        alert('เกิดข้อผิดพลาด: ' + result.message);
+        return;
+      }
+
+      let sampleByteArray = Uint8Array.from(atob(result.data), c => c.charCodeAt(0));
+      let blob = new Blob([sampleByteArray], { type: result.contentType });
+      let url = URL.createObjectURL(blob);
+      
+      let a = document.createElement('a');
+      a.href = url;
+      a.download = result.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function goHome() {
+      currentActiveAlbumId = null;
+      document.getElementById('album-detail-view').classList.add('hidden');
+      document.getElementById('albums-view').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase().trim();
+      goHome();
+      
+      if (!keyword) {
+        renderAlbumsGrid(globalAlbums);
+        return;
+      }
+
+      const filteredAlbums = globalAlbums.filter(album => {
+        const thaiDate = formatThaiDate(album.date).toLowerCase();
+        return thaiDate.includes(keyword) || album.eventName.toLowerCase().includes(keyword);
+      });
+
+      renderAlbumsGrid(filteredAlbums);
+    });
+
+    function clearSearch() {
+      searchInput.value = '';
+      goHome();
+      renderAlbumsGrid(globalAlbums);
+    }
+  </script>
+
+</body>
+</html>
